@@ -4,7 +4,7 @@ use std::os::raw::c_void;
 use std::slice;
 
 pub struct MLP {
-    weights: Vec<Vec<Vec<f64>>>,
+    pub weights: Vec<Vec<Vec<f64>>>,
     values: Vec<Vec<f64>>,
     input: i32,
     output: i32
@@ -30,22 +30,25 @@ impl MLP{
     }
 
     pub fn init_weigths(entries: &[i32]) -> Vec<Vec<Vec<f64>>> {
-        let mut v : Vec<Vec<Vec<f64>>> = Vec::new();
+        let mut v1 : Vec<Vec<Vec<f64>>> = Vec::new();//Layers vector
+
         for i in 0..entries.len(){
-            let mut v1 : Vec<Vec<f64>> = Vec::new();
-            for j in 0..entries[i]{
-                let mut v2 : Vec<f64> = Vec::new();
-                for k in 0..entries[j as usize]{
-                    v2.push(rand::thread_rng().gen_range(-1., 1.));
+            let mut v2 : Vec<Vec<f64>> = Vec::new();//Neurals vector
+            for _j in 0..entries[i as usize] + 1{
+                let mut v3 : Vec<f64> = Vec::new();//weights vector
+                if i != 0{
+                    for _k in 0..entries[i - 1] + 1{
+                        v3.push(MLP::generate_weight());
+                    }
                 }
-                v1.push(v2);
+                v2.push(v3);
             }
-            v.push(v1);
+            v1.push(v2);
         }
-        v
+        v1
     }
 
-    pub fn generate_weight(){
-        rand::thread_rng().gen_range(-1., 1.);
+    pub fn generate_weight() -> f64{
+        rand::thread_rng().gen_range(-1., 1.)
     }
 }
