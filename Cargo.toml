@@ -1,0 +1,11 @@
+[package]
+name = "multilayer-perceptron"
+version = "0.1.0"
+authors = ["timothee.arnauld1@gmail.com <timothee.arnauld1@gmail.com>"]
+
+[lib]
+name = "mutlilayer_perceptron"
+crate-type = ["dylib"]
+
+[dependencies]
+rand = "0.4"
