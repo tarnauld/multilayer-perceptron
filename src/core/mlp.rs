@@ -48,6 +48,11 @@ impl MLP{
         v1
     }
 
+    pub fn activation_function(vi : f64) -> f64{
+        //1./(1. + (-1. * vi).exp())
+        -((-vi).exp() - vi.exp()) / ((-vi).exp() + vi.exp())
+    }
+
     pub fn generate_weight() -> f64{
         rand::thread_rng().gen_range(-1., 1.)
     }

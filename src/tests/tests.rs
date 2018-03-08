@@ -1,4 +1,5 @@
 use core::mlp;
+use core::mlp::MLP;
 use std::os::raw::c_void;
 
 #[test]
@@ -25,13 +26,7 @@ fn should_generate_random_weight(){
     assert!(nbtotal == 20);
 }
 
-/*
-
-2, 3, 1
-
-Three Layers
-1st layer -> 2 Neurals + 1 step = 3 Neurals
-2nd layer -> 3 Neurals + 1 step = 4 Neurals
-3rd layer -> 1 Neurals + 1 step = 2 Neurals
-
-*/
+#[test]
+fn should_be_correct_activation_function(){
+    assert!(MLP::activation_function(1.1) > 0.80049902176 && MLP::activation_function(1.1) < 0.80049902177);
+}
