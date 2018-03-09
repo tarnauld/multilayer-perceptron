@@ -5,7 +5,7 @@ use core::points::array_to_point;
 use core::mlp::*;
 
 #[no_mangle]
-pub extern fn create_model(entries: *mut c_void, length: i32) -> *mut MLP {
+pub extern fn create_model(entries: *mut c_void, length: i32, class: bool) -> *mut MLP {
     let mlp: &[i32];
     unsafe{
         mlp = std::slice::from_raw_parts(entries as *mut i32, length as usize);
@@ -25,7 +25,8 @@ pub extern fn create_model(entries: *mut c_void, length: i32) -> *mut MLP {
         weights,
         output,
         neurals: neurals,
-        delta
+        delta,
+        classification : class
     };
     Box::into_raw(Box::new(m))
 }
@@ -42,14 +43,14 @@ pub unsafe extern fn train_weights(mlp: *mut MLP, nb: i32, pts: *mut c_void, len
 }
 
 #[no_mangle]
-pub unsafe extern fn classification(mlp: *mut MLP, point: [f64; 2]) -> f64 {
+pub unsafe extern fn prediction(mlp: *mut MLP, point: [f64; 2]) -> f64 {
     default_bottom(mlp);
     (*mlp).output[0][1] = point[0];
     (*mlp).output[0][2] = point[1];
     for i in 1..(*mlp).neurals.len() {
         let nb = (*mlp).neurals[i];
         for j in 1..nb {
-            (*mlp).output[i][j as usize] = calculate_output_classification(mlp, i as i32,j);
+            (*mlp).output[i][j as usize] = calculate_output_prediction(mlp, i as i32,j);
         }
     }
     (*mlp).output[(*mlp).neurals.len() - 1][1]

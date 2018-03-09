@@ -2,14 +2,15 @@ use rand;
 use rand::Rng;
 use core::structs::Point;
 use core::structs::MLP;
+use std::f64;
 
 pub fn init_weights(neurals: &[i32], max: i32) -> Vec<Vec<Vec<f64>>> {
     let mut weights: Vec<Vec<Vec<f64>>> = Vec::new();
-    for _i in 0..neurals.len() { //Layer vector
+    for _i in 0..neurals.len() {
         let mut v1 = Vec::new();
-        for _j in 0..max { //Neural vector
+        for _j in 0..max {
             let mut v2 = Vec::new();
-            for _k in 0..max { //Weight vector
+            for _k in 0..max {
                 v2.push(rand::thread_rng().gen_range(-1.0, 1.0));
             }
             v1.push(v2);
@@ -44,7 +45,7 @@ pub unsafe fn train_neural(mlp: *mut MLP, point: &Point) {
     for i in 1..(*mlp).neurals.len() {
         let nb_neurons_for_layer = (*mlp).neurals[i];
         for j in 1..nb_neurons_for_layer {
-            (*mlp).output[i][j as usize] = calculate_output_classification(mlp, i as i32,j);
+            (*mlp).output[i][j as usize] = calculate_output_prediction(mlp, i as i32,j);
         }
     }
     get_delta(mlp, point.y as f64);
@@ -79,29 +80,39 @@ unsafe fn gradient_retropropagation(mlp: *mut MLP) {
     }
 }
 
-unsafe fn get_delta(mlp: *mut MLP, expected_y: f64) {
-    let nb = (*mlp).neurals.last().unwrap();
+unsafe fn get_delta(mlp: *mut MLP, y: f64) {
     let layer = (*mlp).neurals.len() - 1;
-    for i in 0..*nb {
-        let output_for_current_neuron = (*mlp).output[layer][i as usize];
-        let left = 1. - output_for_current_neuron.powf(2.0);
-        let right = output_for_current_neuron - expected_y;
-        (*mlp).delta[layer][i as usize] = left * right;
+    for i in 0..*(*mlp).neurals.last().unwrap() {
+        let o = (*mlp).output[layer][i as usize];
+        if (*mlp).classification == true{
+            (*mlp).delta[layer][i as usize] = (1. - o.powf(2.0)) * (o - y);
+        }else{
+            (*mlp).delta[layer][i as usize] = o - y;
+        }
     }
 }
 
-pub unsafe fn calculate_output_classification(mlp: *mut MLP, layer_number: i32, index: i32) -> f64 {
+pub unsafe fn calculate_output_prediction(mlp: *mut MLP, layer_number: i32, index: i32) -> f64 {
     let layer_number = layer_number;
     let nb = (*mlp).neurals[(layer_number -1) as usize];
     let mut x = 0.0;
     for i in 0..nb {
         let weight = (*mlp).weights[layer_number as usize][i as usize][index as usize];
-        let x_output = (*mlp).output[(layer_number -1) as usize][i as usize];
-        x += weight * x_output;
+        let x_i = (*mlp).output[(layer_number -1) as usize][i as usize];
+        x += weight * x_i;
     }
-    activation_function(x)
+    if (*mlp).classification == true{
+        return activation_function_tanh(x);
+    }else{
+        if layer_number as usize == ((*mlp).neurals.len() - 1){
+                x
+        }
+        else {
+            activation_function_tanh(x)
+        }
+    }
 }
 
-fn activation_function(x: f64) -> f64{
+fn activation_function_tanh(x: f64) -> f64{
     (1. - (-2. * x).exp()) / (1. + (-2. * x).exp())
 }
